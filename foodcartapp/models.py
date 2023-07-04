@@ -129,8 +129,12 @@ class Customer(models.Model):
     lastname = models.CharField('Фамилия', max_length=50)
     phonenumber = PhoneNumberField('Номер телефона', max_length=50)
 
+    class Meta:
+        verbose_name = 'клиент'
+        verbose_name_plural = 'клиенты'
+
     def __str__(self):
-        return f'{self.first_name} {self.last_name}'
+        return f'{self.firstname} {self.lastname}'
 
 
 class Order(models.Model):
@@ -142,8 +146,36 @@ class Order(models.Model):
         db_index=True,
         on_delete=models.CASCADE,
     )
-    product = models.ManyToManyField(
-        Product,
-        verbose_name='Продукты в заказе',
-        related_name='starburger_orders',
+
+    class Meta:
+        verbose_name = 'заказ'
+        verbose_name_plural = 'заказы'
+
+    def __str__(self):
+        return f'Заказ №{self.id}'
+
+
+class OrderProductItem(models.Model):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='starburger_items',
+        verbose_name='заказ',
     )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='starburger_items',
+        verbose_name='продукт',
+    )
+    quantity = models.SmallIntegerField(
+        'Количество',
+        default=0,
+    )
+
+    class Meta:
+        verbose_name = 'продукт в заказе'
+        verbose_name_plural = 'продукты в заказе'
+
+    def __str__(self):
+        return self.product.name
