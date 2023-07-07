@@ -2,7 +2,10 @@ import json
 
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.test import APITestCase
+from rest_framework.response import Response
 
 from .models import (
     Product,
@@ -67,6 +70,9 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     raw_order = request.data
+    order_products = raw_order.get('products', None)
+    if not isinstance(order_products, list) or order_products == 0:
+        return Response('products key not presented or not list', status=400)
     customer, _ = Customer.objects.get_or_create(
         firstname=raw_order['firstname'],
         lastname=raw_order['lastname'],
@@ -84,4 +90,4 @@ def register_order(request):
             product=Product.objects.get(pk=raw_product['product']),
             quantity=raw_product['quantity'],
         )
-    return JsonResponse({})
+    return raw_order
