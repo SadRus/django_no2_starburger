@@ -124,28 +124,11 @@ class RestaurantMenuItem(models.Model):
         return f"{self.restaurant.name} - {self.product.name}"
 
 
-class Customer(models.Model):
+class Order(models.Model):
     firstname = models.CharField('Имя', max_length=50)
     lastname = models.CharField('Фамилия', max_length=50)
     phonenumber = PhoneNumberField('Номер телефона', max_length=50)
-
-    class Meta:
-        verbose_name = 'клиент'
-        verbose_name_plural = 'клиенты'
-
-    def __str__(self):
-        return f'{self.firstname} {self.lastname}'
-
-
-class Order(models.Model):
     address = models.TextField('Адрес доставки', max_length=200)
-    customer = models.ForeignKey(
-        Customer,
-        verbose_name='Клиент',
-        related_name='starburger_orders',
-        db_index=True,
-        on_delete=models.CASCADE,
-    )
 
     class Meta:
         verbose_name = 'заказ'

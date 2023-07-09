@@ -6,10 +6,10 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.test import APITestCase
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer, ModelSerializer, CharField
 
 from .models import (
     Product,
-    Customer,
     Order,
     OrderProductItem,
 )
@@ -67,27 +67,37 @@ def product_list_api(request):
     })
 
 
+class OrderProductItemSerializer(ModelSerializer):
+    class Meta:
+        model = OrderProductItem
+        fields = ['product', 'quantity']
+
+
+class OrderSerializer(ModelSerializer):
+    products = OrderProductItemSerializer(many=True, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
+
+
 @api_view(['POST'])
 def register_order(request):
-    raw_order = request.data
-    order_products = raw_order.get('products', None)
-    if not isinstance(order_products, list) or order_products == 0:
-        return Response('products key not presented or not list', status=400)
-    customer, _ = Customer.objects.get_or_create(
-        firstname=raw_order['firstname'],
-        lastname=raw_order['lastname'],
-        defaults={
-            'phonenumber': raw_order['phonenumber']
-        }
-    )
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    validated_order = serializer.validated_data
+    print(validated_order)
+
     order = Order.objects.create(
-        address=raw_order['address'],
-        customer=customer,
+        firstname=validated_order['firstname'],
+        lastname=validated_order['lastname'],
+        phonenumber=validated_order['phonenumber'],
+        address=validated_order['address'],
     )
-    for raw_product in raw_order['products']:
+    for raw_product in validated_order['products']:
         OrderProductItem.objects.create(
             order=order,
-            product=Product.objects.get(pk=raw_product['product']),
+            product=raw_product['product'],
             quantity=raw_product['quantity'],
         )
-    return raw_order
+    return Response(request.data)

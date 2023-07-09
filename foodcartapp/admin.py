@@ -7,7 +7,6 @@ from .models import Product
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
-from .models import Customer
 from .models import Order
 from .models import OrderProductItem
 
@@ -114,16 +113,13 @@ class ProductAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
-    pass
-
-
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = [
         '__str__',
-        'customer',
+        'firstname',
+        'lastname',
+        'phonenumber',
         'address',
     ]
     inlines = [
