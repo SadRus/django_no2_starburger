@@ -1,12 +1,8 @@
-import json
-
 from django.http import JsonResponse
 from django.templatetags.static import static
-from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.test import APITestCase
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer, ModelSerializer, CharField
+from rest_framework.serializers import ModelSerializer
 
 from .models import (
     Product,
@@ -74,30 +70,31 @@ class OrderProductItemSerializer(ModelSerializer):
 
 
 class OrderSerializer(ModelSerializer):
-    products = OrderProductItemSerializer(many=True, allow_empty=False)
+    products = OrderProductItemSerializer(
+        allow_empty=False,
+        many=True,
+        write_only=True,
+    )
 
     class Meta:
         model = Order
-        fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
+        fields = ['id', 'products', 'firstname', 'lastname', 'phonenumber', 'address']
+
+    def create(self, validated_data):
+        raw_products = validated_data.pop('products')
+        order = Order.objects.create(**validated_data)
+        for raw_product in raw_products:
+            OrderProductItem.objects.create(
+                order=order,
+                product=raw_product['product'],
+                quantity=raw_product['quantity'],
+            )
+        return order
 
 
 @api_view(['POST'])
 def register_order(request):
-    serializer = OrderSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    validated_order = serializer.validated_data
-    print(validated_order)
-
-    order = Order.objects.create(
-        firstname=validated_order['firstname'],
-        lastname=validated_order['lastname'],
-        phonenumber=validated_order['phonenumber'],
-        address=validated_order['address'],
-    )
-    for raw_product in validated_order['products']:
-        OrderProductItem.objects.create(
-            order=order,
-            product=raw_product['product'],
-            quantity=raw_product['quantity'],
-        )
-    return Response(request.data)
+    order_serializer = OrderSerializer(data=request.data)
+    order_serializer.is_valid(raise_exception=True)
+    order_serializer.save()
+    return Response(order_serializer.data)
