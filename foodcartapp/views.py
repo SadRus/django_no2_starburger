@@ -2,13 +2,9 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer
 
-from .models import (
-    Product,
-    Order,
-    OrderProductItem,
-)
+from foodcartapp.serializers import OrderSerializer
+from .models import Product
 
 
 def banners_list_api(request):
@@ -61,35 +57,6 @@ def product_list_api(request):
         'ensure_ascii': False,
         'indent': 4,
     })
-
-
-class OrderProductItemSerializer(ModelSerializer):
-    class Meta:
-        model = OrderProductItem
-        fields = ['product', 'quantity']
-
-
-class OrderSerializer(ModelSerializer):
-    products = OrderProductItemSerializer(
-        allow_empty=False,
-        many=True,
-        write_only=True,
-    )
-
-    class Meta:
-        model = Order
-        fields = ['id', 'products', 'firstname', 'lastname', 'phonenumber', 'address']
-
-    def create(self, validated_data):
-        raw_products = validated_data.pop('products')
-        order = Order.objects.create(**validated_data)
-        for raw_product in raw_products:
-            OrderProductItem.objects.create(
-                order=order,
-                product=raw_product['product'],
-                quantity=raw_product['quantity'],
-            )
-        return order
 
 
 @api_view(['POST'])
