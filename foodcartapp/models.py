@@ -1,7 +1,7 @@
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Func, F, Sum
+from django.db.models import F, Sum
 
 
 class Restaurant(models.Model):
@@ -104,9 +104,9 @@ class RestaurantMenuItem(models.Model):
     )
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE,
         related_name='menu_items',
         verbose_name='продукт',
+        on_delete=models.CASCADE,
     )
     availability = models.BooleanField(
         'в продаже',
@@ -127,7 +127,7 @@ class RestaurantMenuItem(models.Model):
 
 class OrderQuerySet(models.QuerySet):
     def get_cost(self):
-        return self.annotate(cost=Sum(F("starburger_items__product__price") * F("starburger_items__quantity")))
+        return self.annotate(cost=Sum(F("starburger_items__price")))
 
 
 class Order(models.Model):
@@ -158,6 +158,12 @@ class OrderProductItem(models.Model):
         on_delete=models.CASCADE,
         related_name='starburger_items',
         verbose_name='продукт',
+    )
+    price = models.DecimalField(
+        'цена',
+        max_digits=7,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
     )
     quantity = models.SmallIntegerField(
         'Количество',

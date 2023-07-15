@@ -27,6 +27,7 @@ class OrderSerializer(ModelSerializer):
             OrderProductItem.objects.create(
                 order=order,
                 product=raw_product['product'],
+                price=raw_product['product'].price * raw_product['quantity'],
                 quantity=raw_product['quantity'],
             )
         return order
