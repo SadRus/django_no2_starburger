@@ -2,7 +2,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum
-
+from django.utils import timezone
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -151,6 +151,23 @@ class Order(models.Model):
         'Комментарий',
         max_length=200,
         default='',
+    )
+    registered_at = models.DateTimeField(
+        'Время оформления',
+        default=timezone.now,
+        db_index=True,
+    )
+    called_at = models.DateTimeField(
+        'Время звонка',
+        db_index=True,
+        null=True,
+        blank=True,
+    )
+    delivered_at = models.DateTimeField(
+        'Время доставки',
+        db_index=True,
+        null=True,
+        blank=True,
     )
 
     objects = OrderQuerySet.as_manager()
