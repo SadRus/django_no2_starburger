@@ -147,6 +147,11 @@ class Order(models.Model):
         choices=STATUS_CHOICES,
         db_index=True,
     )
+    comment = models.TextField(
+        'Комментарий',
+        max_length=200,
+        default='',
+    )
 
     objects = OrderQuerySet.as_manager()
 
