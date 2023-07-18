@@ -3,6 +3,7 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
+from django.template import RequestContext, Template
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
@@ -92,6 +93,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    return render(request, template_name='order_items.html', context={
+    context = {
         'order_items': Order.objects.get_cost(),
-    })
+    }
+    return render(request, template_name='order_items.html', context=context)

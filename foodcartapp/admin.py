@@ -1,7 +1,12 @@
+from typing import Any
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.http.request import HttpRequest
+from django.shortcuts import reverse, redirect
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.encoding import iri_to_uri
+from django.http import HttpRequest
 
 from .models import Product
 from .models import ProductCategory
@@ -125,3 +130,10 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         OrderProductItemInline,
     ]
+
+    def response_change(self, request: HttpRequest, obj: Any):
+        if url_has_allowed_host_and_scheme(request.GET.get('next'), None):
+            url = iri_to_uri(request.GET['next'])
+            return redirect(url)
+        else:
+            return redirect(request.path)
