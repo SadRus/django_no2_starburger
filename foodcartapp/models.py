@@ -137,6 +137,10 @@ class Order(models.Model):
         ('delivery', 'Передан курьеру'),
         ('complete', 'Выполнен'),
     ]
+    PAYMENT_TYPE_CHOICES = [
+        ('cash', 'Наличными'),
+        ('online', 'Онлайн'),
+    ]
     firstname = models.CharField('Имя', max_length=50)
     lastname = models.CharField('Фамилия', max_length=50)
     phonenumber = PhoneNumberField('Номер телефона', max_length=50)
@@ -144,7 +148,15 @@ class Order(models.Model):
     status = models.CharField(
         'Статус',
         max_length=30,
+        default='incoming',
         choices=STATUS_CHOICES,
+        db_index=True,
+    )
+    payment_type = models.CharField(
+        'Тип оплаты',
+        max_length=30,
+        default='cash',
+        choices=PAYMENT_TYPE_CHOICES,
         db_index=True,
     )
     comment = models.TextField(
