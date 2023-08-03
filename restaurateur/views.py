@@ -3,13 +3,12 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
-from django.template import RequestContext, Template
+from django.db.models import QuerySet
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
-
-from foodcartapp.models import Product, Restaurant, Order
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
 
 
 class Login(forms.Form):
@@ -32,7 +31,7 @@ class Login(forms.Form):
 class LoginView(View):
     def get(self, request, *args, **kwargs):
         form = Login()
-        return render(request, "login.html", context={
+        return render(request, 'login.html', context={
             'form': form
         })
 
@@ -47,10 +46,10 @@ class LoginView(View):
             if user:
                 login(request, user)
                 if user.is_staff:  # FIXME replace with specific permission
-                    return redirect("restaurateur:RestaurantView")
-                return redirect("start_page")
+                    return redirect('restaurateur:RestaurantView')
+                return redirect('start_page')
 
-        return render(request, "login.html", context={
+        return render(request, 'login.html', context={
             'form': form,
             'ivalid': True,
         })
@@ -78,7 +77,7 @@ def view_products(request):
             (product, ordered_availability)
         )
 
-    return render(request, template_name="products_list.html", context={
+    return render(request, template_name='products_list.html', context={
         'products_with_restaurant_availability': products_with_restaurant_availability,
         'restaurants': restaurants,
     })
@@ -86,14 +85,33 @@ def view_products(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_restaurants(request):
-    return render(request, template_name="restaurants_list.html", context={
+    return render(request, template_name='restaurants_list.html', context={
         'restaurants': Restaurant.objects.all(),
     })
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    product_available_restaurants = {}
+    for product in Product.objects.all():
+        product_available_restaurant_ids = product.menu_items \
+                                                  .filter(availability=True) \
+                                                  .values_list('restaurant')
+        product_available_restaurants[product] = Restaurant.objects.filter(
+            pk__in=product_available_restaurant_ids
+        )
+
+    orders_with_available_restaurants = []
+    for order in Order.objects.exclude(status='complete'):
+        available_restaurants = QuerySet.intersection(
+            *[product_available_restaurants[product.product] for product in order.starburger_items.all()]
+        )
+        orders_with_available_restaurants.append(
+            (order, available_restaurants)
+        )
+        print(available_restaurants)
+
     context = {
-        'orders': Order.objects.exclude(status='complete').get_cost(),
+        'orders': orders_with_available_restaurants,
     }
     return render(request, template_name='order_items.html', context=context)

@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
 
+
 class Restaurant(models.Model):
     name = models.CharField(
         'название',
@@ -28,6 +29,7 @@ class Restaurant(models.Model):
         return self.name
 
 
+# TODO учесть это и в меню выводить только доступные продукты
 class ProductQuerySet(models.QuerySet):
     def available(self):
         products = (
@@ -99,7 +101,7 @@ class RestaurantMenuItem(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
         related_name='menu_items',
-        verbose_name="ресторан",
+        verbose_name='ресторан',
         on_delete=models.CASCADE,
     )
     product = models.ForeignKey(
@@ -122,18 +124,18 @@ class RestaurantMenuItem(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.restaurant.name} - {self.product.name}"
+        return f'{self.restaurant.name} - {self.product.name}'
 
 
 class OrderQuerySet(models.QuerySet):
     def get_cost(self):
-        return self.annotate(cost=Sum(F("starburger_items__price")))
+        return self.annotate(cost=Sum(F('starburger_items__price')))
 
 
 class Order(models.Model):
     STATUS_CHOICES = [
         ('incoming', 'Необработанный'),
-        ('in_progress', 'Принят в обработку'),
+        ('in_progress', 'Готовится'),
         ('delivery', 'Передан курьеру'),
         ('complete', 'Выполнен'),
     ]
@@ -141,6 +143,13 @@ class Order(models.Model):
         ('cash', 'Наличными'),
         ('online', 'Онлайн'),
     ]
+    restaurant = models.ForeignKey(
+        Restaurant,
+        null=True,
+        blank=True,
+        related_name='orders',
+        on_delete=models.SET_NULL,
+    )
     firstname = models.CharField('Имя', max_length=50)
     lastname = models.CharField('Фамилия', max_length=50)
     phonenumber = PhoneNumberField('Номер телефона', max_length=50)
@@ -162,6 +171,7 @@ class Order(models.Model):
     comment = models.TextField(
         'Комментарий',
         max_length=200,
+        blank=True,
         default='',
     )
     registered_at = models.DateTimeField(
@@ -187,6 +197,7 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'заказ'
         verbose_name_plural = 'заказы'
+        ordering = ['-status']
 
     def __str__(self):
         return f'Заказ №{self.id}'
@@ -221,4 +232,4 @@ class OrderProductItem(models.Model):
         verbose_name_plural = 'продукты в заказе'
 
     def __str__(self):
-        return self.product.name
+        return f'Заказ №{self.id} - {self.product.name}'

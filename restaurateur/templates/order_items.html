@@ -14,26 +14,33 @@
    <table class="table table-responsive">
     <tr>
       <th>ID заказа</th>
-      <th>Статус</th>
-      <th>Способ оплаты</th>
-      <th>Стоимость заказа</th>
-      <th>Клиент</th>
       <th>Телефон</th>
-      <th>Адрес доставки</th>
       <th>Комментарий</th>
+      <th>Адрес доставки</th>
+      <th>Рестораны</th>
       <th>Ссылка на админку</th>
     </tr>
 
-    {% for order in orders %}
+    {% for order, rests in orders %}
       <tr>
         <td> {{ order.id }} </td>
-        <td> {{ order.get_status_display }} </td>
-        <td> {{ order.get_payment_type_display }} </td>
-        <td> {{ order.cost }} </td>
-        <td> {{ order.firstname }} {{ order.lastname }} </td>
         <td> {{ order.phonenumber }} </td>
-        <td> {{ order.address }}</td>
         <td> {{ order.comment }}</td>
+        <td> {{ order.address }}</td>
+
+        {% if order.restaurant %}
+        <td> Готовит {{ order.restaurant }}</td>
+        {% else %}
+        <td>
+          <details open>
+            <summary> Может быть приготовлен ресторанами </summary>
+              {% for rest in rests %}
+                <li>{{ rest.name }}</li>
+              {% endfor %}
+          </details>
+        </td>
+        {% endif %}
+
         <td> <a href="{% url "admin:foodcartapp_order_change" object_id=order.id %}?next={{ request.get_full_path|urlencode }}"> Редактировать </a></td>
       </tr>
     {% endfor %}

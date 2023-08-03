@@ -114,7 +114,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductCategory)
-class ProductAdmin(admin.ModelAdmin):
+class ProductCategoryAdmin(admin.ModelAdmin):
     pass
 
 
@@ -133,6 +133,9 @@ class OrderAdmin(admin.ModelAdmin):
 
     def response_change(self, request: HttpRequest, obj: Any):
         if url_has_allowed_host_and_scheme(request.GET.get('next'), None):
+            if obj.restaurant:
+                obj.status = 'in_progress'
+                obj.save()
             url = iri_to_uri(request.GET['next'])
             return redirect(url)
         else:

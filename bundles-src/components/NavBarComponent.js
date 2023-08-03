@@ -23,9 +23,11 @@ class NavBarComponent extends Component{
                 <li>
                   <a href="#">Блюд в заказе: {this.props.totalItems ? <span>{this.props.totalItems}</span> : "" }</a>
                 </li>
+
                 <li>
                   <a href="#" className={ this.props.totalAmount ? 'currency' : '' }>Стоимость: {this.props.totalAmount ? <span>{this.props.totalAmount}</span> : "" }</a>
                 </li>
+
                 <li style={{float:'right'}}>
                   <a onClick={this.props.handleCartShow}>
                     <button type="button" href="#" className="btn btn-primary btn-sm">
