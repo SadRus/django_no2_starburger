@@ -4,11 +4,11 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import QuerySet
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from geopy import distance
 
-from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
+from foodcartapp.models import Product, Restaurant, Order
 
 
 class Login(forms.Form):
@@ -101,17 +101,35 @@ def view_orders(request):
             pk__in=product_available_restaurant_ids
         )
 
-    orders_with_available_restaurants = []
+    orders = []
     for order in Order.objects.exclude(status='complete'):
         available_restaurants = QuerySet.intersection(
             *[product_available_restaurants[product.product] for product in order.starburger_items.all()]
         )
-        orders_with_available_restaurants.append(
-            (order, available_restaurants)
+
+        restaurants_with_coordinates = []
+        for restaurant in available_restaurants:
+            delivery_distance = round(
+                distance.distance(order.coordinates, restaurant.coordinates).km, 3
+            )
+            restaurants_with_coordinates.append(
+                (restaurant, delivery_distance)
+            )
+        restaurants_with_coordinates.sort(key=lambda i: i[1])
+
+        orders.append(
+            {
+                'address': order.address,
+                'available_restaurants': restaurants_with_coordinates,
+                'coordinates': order.coordinates,
+                'comment': order.comment,
+                'id': order.id,
+                'phonenumber': order.phonenumber,
+                'restaurant': order.restaurant,
+            }
         )
-        print(available_restaurants)
 
     context = {
-        'orders': orders_with_available_restaurants,
+        'orders': orders,
     }
     return render(request, template_name='order_items.html', context=context)

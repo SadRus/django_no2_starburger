@@ -21,7 +21,7 @@
       <th>Ссылка на админку</th>
     </tr>
 
-    {% for order, rests in orders %}
+    {% for order in orders %}
       <tr>
         <td> {{ order.id }} </td>
         <td> {{ order.phonenumber }} </td>
@@ -29,13 +29,17 @@
         <td> {{ order.address }}</td>
 
         {% if order.restaurant %}
-        <td> Готовит {{ order.restaurant }}</td>
+          <td> Готовит {{ order.restaurant }}</td>
+        {% elif not order.coordinates %}
+          <td> Ошибка определения координат </td>
+        {% elif not order.available_restaurants %}
+          <td> Не может быть приготовлен </td>
         {% else %}
         <td>
           <details open>
             <summary> Может быть приготовлен ресторанами </summary>
-              {% for rest in rests %}
-                <li>{{ rest.name }}</li>
+              {% for restaurant, distance in order.available_restaurants %}
+                <li>{{ restaurant.name }} - {{ distance }} км</li>
               {% endfor %}
           </details>
         </td>

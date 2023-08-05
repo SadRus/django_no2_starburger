@@ -4,6 +4,9 @@ from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
 
+from restaurateur.coordinates import fetch_coordinates
+from django.conf import settings
+
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -21,6 +24,10 @@ class Restaurant(models.Model):
         blank=True,
     )
 
+    @property
+    def coordinates(self):
+        return fetch_coordinates(settings.YA_GEOCODER_KEY, self.address)
+
     class Meta:
         verbose_name = 'ресторан'
         verbose_name_plural = 'рестораны'
@@ -29,7 +36,6 @@ class Restaurant(models.Model):
         return self.name
 
 
-# TODO учесть это и в меню выводить только доступные продукты
 class ProductQuerySet(models.QuerySet):
     def available(self):
         products = (
@@ -194,10 +200,14 @@ class Order(models.Model):
 
     objects = OrderQuerySet.as_manager()
 
+    @property
+    def coordinates(self):
+        return fetch_coordinates(settings.YA_GEOCODER_KEY, self.address)
+
     class Meta:
         verbose_name = 'заказ'
         verbose_name_plural = 'заказы'
-        ordering = ['-status']
+        ordering = ['-status', 'id']
 
     def __str__(self):
         return f'Заказ №{self.id}'
