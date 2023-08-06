@@ -9,6 +9,8 @@ from django.contrib.auth import views as auth_views
 from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order
+from restaurateur.coordinates import fetch_coordinates
+from django.conf import settings
 
 
 class Login(forms.Form):
@@ -102,15 +104,18 @@ def view_orders(request):
         )
 
     orders = []
-    for order in Order.objects.exclude(status='complete'):
+    for order in Order.objects.select_related('restaurant').exclude(status='complete'):
         available_restaurants = QuerySet.intersection(
-            *[product_available_restaurants[product.product] for product in order.starburger_items.all()]
+            *[product_available_restaurants[item.product] for item in order.starburger_items.all()]
         )
+
+        order_coordinates = fetch_coordinates(settings.YA_GEOCODER_KEY, order.address)
 
         restaurants_with_coordinates = []
         for restaurant in available_restaurants:
+            restaurant_coordinates = fetch_coordinates(settings.YA_GEOCODER_KEY, restaurant.address)
             delivery_distance = round(
-                distance.distance(order.coordinates, restaurant.coordinates).km, 3
+                distance.distance(order_coordinates, restaurant_coordinates).km, 3
             )
             restaurants_with_coordinates.append(
                 (restaurant, delivery_distance)
@@ -121,7 +126,7 @@ def view_orders(request):
             {
                 'address': order.address,
                 'available_restaurants': restaurants_with_coordinates,
-                'coordinates': order.coordinates,
+                'coordinates': order_coordinates,
                 'comment': order.comment,
                 'id': order.id,
                 'phonenumber': order.phonenumber,

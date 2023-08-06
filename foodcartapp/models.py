@@ -4,9 +4,6 @@ from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
 
-from restaurateur.coordinates import fetch_coordinates
-from django.conf import settings
-
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -23,10 +20,6 @@ class Restaurant(models.Model):
         max_length=50,
         blank=True,
     )
-
-    @property
-    def coordinates(self):
-        return fetch_coordinates(settings.YA_GEOCODER_KEY, self.address)
 
     class Meta:
         verbose_name = 'ресторан'
@@ -199,10 +192,6 @@ class Order(models.Model):
     )
 
     objects = OrderQuerySet.as_manager()
-
-    @property
-    def coordinates(self):
-        return fetch_coordinates(settings.YA_GEOCODER_KEY, self.address)
 
     class Meta:
         verbose_name = 'заказ'
