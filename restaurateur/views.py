@@ -113,7 +113,9 @@ def view_orders(request):
 
         restaurants_with_coordinates = []
         for restaurant in available_restaurants:
-            restaurant_coordinates = fetch_coordinates(settings.YA_GEOCODER_KEY, restaurant.address)
+            restaurant_coordinates = fetch_coordinates(
+                settings.YA_GEOCODER_KEY, restaurant.address
+            )
             delivery_distance = round(
                 distance.distance(order_coordinates, restaurant_coordinates).km, 3
             )
