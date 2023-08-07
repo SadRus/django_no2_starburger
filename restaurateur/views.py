@@ -104,7 +104,10 @@ def view_orders(request):
         )
 
     orders = []
-    for order in Order.objects.prefetch_related('starburger_items__product').select_related('restaurant').exclude(status='complete'):
+    raw_orders = Order.objects.prefetch_related('starburger_items__product') \
+                              .select_related('restaurant') \
+                              .exclude(status='complete')
+    for order in raw_orders:
         available_restaurants = QuerySet.intersection(
             *[product_available_restaurants[item.product] for item in order.starburger_items.all()]
         )
