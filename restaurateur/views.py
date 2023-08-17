@@ -95,18 +95,13 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     product_available_restaurants = {}
-    for product in Product.objects.all():
-        product_available_restaurant_ids = product.menu_items \
-                                                  .filter(availability=True) \
-                                                  .values_list('restaurant')
+    for product in Product.objects.fetch_with_available_restaurant_ids():
         product_available_restaurants[product] = Restaurant.objects.filter(
-            pk__in=product_available_restaurant_ids
+            pk__in=product.available_restaurant_ids
         )
 
     orders = []
-    raw_orders = Order.objects.prefetch_related('starburger_items__product') \
-                              .select_related('restaurant') \
-                              .exclude(status='complete')
+    raw_orders = Order.objects.prefetch_order_items()
     for order in raw_orders:
         available_restaurants = QuerySet.intersection(
             *[product_available_restaurants[item.product] for item in order.starburger_items.all()]
