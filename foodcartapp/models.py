@@ -1,5 +1,5 @@
 from phonenumber_field.modelfields import PhoneNumberField
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
@@ -37,6 +37,15 @@ class ProductQuerySet(models.QuerySet):
             .values_list('product')
         )
         return self.filter(pk__in=products)
+
+    def fetch_with_available_restaurant_ids(self):
+        products = []
+        for product in self:
+            product.available_restaurant_ids = product.menu_items \
+                             .filter(availability=True) \
+                             .values_list('restaurant')
+            products.append(product)
+        return products
 
 
 class ProductCategory(models.Model):
@@ -130,6 +139,11 @@ class OrderQuerySet(models.QuerySet):
     def get_cost(self):
         return self.annotate(cost=Sum(F('starburger_items__price')))
 
+    def prefetch_order_items(self):
+        return self.prefetch_related('starburger_items__product') \
+                              .select_related('restaurant') \
+                              .exclude(status='complete')
+
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -141,6 +155,7 @@ class Order(models.Model):
     PAYMENT_TYPE_CHOICES = [
         ('cash', 'Наличными'),
         ('online', 'Онлайн'),
+        ('not_specified', 'Не указано'),
     ]
     restaurant = models.ForeignKey(
         Restaurant,
@@ -163,7 +178,7 @@ class Order(models.Model):
     payment_type = models.CharField(
         'Тип оплаты',
         max_length=30,
-        default='cash',
+        default='not_specified',
         choices=PAYMENT_TYPE_CHOICES,
         db_index=True,
     )
@@ -171,7 +186,6 @@ class Order(models.Model):
         'Комментарий',
         max_length=200,
         blank=True,
-        default='',
     )
     registered_at = models.DateTimeField(
         'Время оформления',
@@ -223,7 +237,7 @@ class OrderProductItem(models.Model):
     )
     quantity = models.SmallIntegerField(
         'Количество',
-        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
 
     class Meta:
