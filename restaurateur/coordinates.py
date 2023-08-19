@@ -23,6 +23,5 @@ def fetch_coordinates(apikey, address):
             place.save()
             return place.latitude, place.longitude
         return place.latitude, place.longitude
-    except Exception as err:
-        print(err)
+    except Exception:
         return None, None
