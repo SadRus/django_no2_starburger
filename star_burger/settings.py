@@ -9,7 +9,6 @@ env = Env()
 env.read_env()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 YA_GEOCODER_KEY = env('YA_GEOCODER_KEY')
 
@@ -82,12 +81,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'star_burger.wsgi.application'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, env('MEDIA_ROOT'))
+MEDIA_URL = env('MEDIA_URL')
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:////{0}'.format(os.path.join(BASE_DIR, 'db.sqlite3'))
+        default='sqlite:////{0}'.format(os.path.join(BASE_DIR, env('DATABASE')))
     )
 }
 
@@ -116,14 +115,12 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
-
-INTERNAL_IPS = [
-    '127.0.0.1'
-]
-
-
+STATIC_URL = env('STATIC_URL')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "assets"),
     os.path.join(BASE_DIR, "bundles"),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, env('STATIC_ROOT'))
+INTERNAL_IPS = [
+    '127.0.0.1'
 ]
