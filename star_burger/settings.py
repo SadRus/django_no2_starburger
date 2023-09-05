@@ -46,6 +46,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 
     'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
+    'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404',
 ]
 
 ROOT_URLCONF = 'star_burger.urls'
