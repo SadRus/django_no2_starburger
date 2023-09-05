@@ -16,6 +16,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
+USE_X_FORWARDED_HOST = env('USE_X_FORWARDED_HOST', False)
 
 INSTALLED_APPS = [
     'foodcartapp.apps.FoodcartappConfig',
