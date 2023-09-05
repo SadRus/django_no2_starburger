@@ -96,12 +96,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'star_burger.wsgi.application'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, env('MEDIA_ROOT'))
-MEDIA_URL = env('MEDIA_URL')
+MEDIA_ROOT = os.path.join(BASE_DIR, env('MEDIA_ROOT', 'media/'))
+MEDIA_URL = env('MEDIA_URL', '/media/')
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:////{0}'.format(os.path.join(BASE_DIR, env('DATABASE')))
+        default='sqlite:////{0}'.format(os.path.join(BASE_DIR, env('DATABASE', 'db.sqlite3')))
     )
 }
 
@@ -130,12 +130,12 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = env('STATIC_URL')
+STATIC_URL = env('STATIC_URL', '/static/')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "assets"),
     os.path.join(BASE_DIR, "bundles"),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, env('STATIC_ROOT'))
+STATIC_ROOT = os.path.join(BASE_DIR, env('STATIC_ROOT', 'static/'))
 INTERNAL_IPS = [
     '127.0.0.1'
 ]
