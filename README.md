@@ -156,6 +156,10 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ROLLBAR_ACCESS_TOKEN` - rollbar токен для доступа к сервису, который можно получить на сайте https://rollbar.com
 - `ROLLBAR_ENVIROMENT` - окружение, будет отражаться в выводе ошибки в интерфейсе сервиса (например development, production и др.)
 
+## Как быстро обновить код на сервере
+Зайти по ssh на сервер и запустить bash-скрипт деплоя:
+```./.deployment-script```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
