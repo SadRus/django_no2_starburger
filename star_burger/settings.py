@@ -52,8 +52,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'star_burger.urls'
 
 ROLLBAR = {
-    'access_token': env('ROLLBAR_ACCESS_TOKEN'),
-    'environment': env('ROLLBAR_ENVIROMENT'),
+    'access_token': env('ROLLBAR_ACCESS_TOKEN', None),
+    'environment': env('ROLLBAR_ENVIROMENT', 'default enviroment'),
     'branch': Repo().head.ref.name,
     'root': BASE_DIR,
 }
