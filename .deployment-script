@@ -1,0 +1,42 @@
+#!/bin/bash
+PURPLE='\033[0;35m'
+NORMAL='\033[0m'
+set -euxo pipefail
+echo -e "${PURPLE}====UPDATING REPOSITORY====${NORMAL}"
+git pull
+
+echo -e "${PURPLE}====DOWNLOADING PYTHON LIBRARIES====${NORMAL}"
+.venv/bin/pip install -r requirements.txt
+
+echo -e "${PURPLE}====DOWNLOADING JS LIBRARIES====${NORMAL}"
+npm ci --dev
+
+echo -e "${PURPLE}====REBUILDING JS CODE====${NORMAL}"
+./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
+
+echo -e "${PURPLE}====DJANGO COLLECTSTATIC====${NORMAL}"
+.venv/bin/python manage.py collectstatic --noinput
+
+echo -e "${PURPLE}====APPLYING MIGRATIONS TO DATABASE====${NORMAL}"
+.venv/bin/python manage.py migrate --noinput
+
+echo -e "${PURPLE}====RESTARTING STARBURGER.SERVICE====${NORMAL}"
+systemctl restart starburger_site.service
+
+echo -e "${PURPLE}====SYSTEMCTL DAEMON-RELOAD====${NORMAL}"
+systemctl daemon-reload
+
+curl -X POST 'https://api.rollbar.com/api/1/deploy' \
+     -H "X-Rollbar-Access-Token: $ROLLBAR_ACCESS_TOKEN" \
+     -H 'content-type: application/json' \
+     -d '
+{
+  "environment": "production",
+  "revision": "'"$(git rev-parse HEAD)"'",
+  "status": "succeeded",
+  "rollbar_username": "rystixx"
+}
+'
+
+echo -e "${PURPLE}====DEPLOYMENT IS COMPLETED====${NORMAL}"
+
