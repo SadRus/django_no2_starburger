@@ -9,7 +9,7 @@ from django.contrib.auth import views as auth_views
 from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order
-from restaurateur.coordinates import fetch_coordinates
+from geocoder.coordinates import fetch_coordinates
 from django.conf import settings
 
 
