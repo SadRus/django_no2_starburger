@@ -3,7 +3,6 @@ import os
 import dj_database_url
 
 from environs import Env
-from git import Repo
 
 
 env = Env()
@@ -54,7 +53,6 @@ ROOT_URLCONF = 'star_burger.urls'
 ROLLBAR = {
     'access_token': env('ROLLBAR_ACCESS_TOKEN', None),
     'environment': env('ROLLBAR_ENVIROMENT', 'default enviroment'),
-    'branch': Repo().head.ref.name,
     'root': BASE_DIR,
 }
 
@@ -131,10 +129,10 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = env('STATIC_URL', '/static/')
+STATIC_URL = env('STATIC_URL', 'static/')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "assets"),
-    os.path.join(BASE_DIR, "bundles"),
+    os.path.join(BASE_DIR, "../frontend/bundles"),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, env('STATIC_ROOT', 'static/'))
 INTERNAL_IPS = [

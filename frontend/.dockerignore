@@ -1,0 +1,4 @@
+.git
+bundles/**
+node_modules/**
+.parcel-cache/**
