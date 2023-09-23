@@ -8,6 +8,7 @@ services:
       - frontend_data:/usr/src/frontend/
     depends_on:
       - db
+    restart: always
   web:
     container_name: django
     build: ./backend
@@ -25,6 +26,7 @@ services:
     depends_on:
       - db
       - frontend
+    restart: always
   db:
     image: postgres:12.0-alpine
     volumes:
